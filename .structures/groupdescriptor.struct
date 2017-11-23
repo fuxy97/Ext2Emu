@@ -1,0 +1,7 @@
+bg_block_bitmap 0 4
+bg_inode_bitmap 4 4
+bg_inode_table 8 4
+bg_free_blocks_count 12 2
+bg_free_inodes_count 14 2
+bg_used_dirs_count 16 2
+bg_pad 18 14

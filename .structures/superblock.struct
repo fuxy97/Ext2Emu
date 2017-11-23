@@ -1,0 +1,15 @@
+s_magic 0 2
+s_inodes_count 2 4
+s_blocks_count 6 4
+s_free_inodes_count 10 4
+s_free_blocks_count 14 4
+s_first_data_block 18 4
+s_log_block_size 22 1
+s_inode_size 23 1
+s_inodes_per_group 24 2
+s_blocks_per_group 26 2
+s_wtime 28 4
+s_state 32 1
+s_errors 33 1
+s_volume_name 34 16
+s_uuid 50 16

@@ -1,0 +1,12 @@
+i_mode 0 2
+i_uid 2 4
+i_size 6 8
+i_atime 14 4
+i_mtime 18 4
+i_ctime 22 4
+i_dtime 26 4
+i_gid 30 4
+i_blocks 34 4
+i_flags 38 1
+i_block 39 60
+i_pad 99 29
