@@ -34,7 +34,6 @@ def write_to_end(fd, buf, nbytes):
         data_block_buffer.load(last_bn)
         data_block_buffer.set_bytes(0, buf[remaining_bytes_count:nbytes])
     else:
-        print(last_block_size)
         data_block_buffer.set_bytes(last_block_size, buf[:nbytes])
 
     file_inodetable_block.set_field(

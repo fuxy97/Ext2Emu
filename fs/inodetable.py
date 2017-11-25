@@ -66,14 +66,15 @@ I_BLOCK_SIZE = 60
 
 def lbn_to_bn(lbn, i_block):
     first_blocks = [fs.bytes_to_int(i_block[i: i + fs.ADDRESS_SIZE]) for i in
-                    range(0, I_BLOCK_SIZE // fs.ADDRESS_SIZE - 3, fs.ADDRESS_SIZE)]
+                    range(0, (I_BLOCK_SIZE // fs.ADDRESS_SIZE - 3) * fs.ADDRESS_SIZE,
+                          fs.ADDRESS_SIZE)]
     return first_blocks[lbn]
 
 
 def get_last_file_bn(i_block):
     first_blocks = [bn for bn in [fs.bytes_to_int(i_block[i: i + fs.ADDRESS_SIZE]) for i in
-                    range(0, I_BLOCK_SIZE // fs.ADDRESS_SIZE - 3, fs.ADDRESS_SIZE)] if
-                    bn != 0]
+                    range(0, (I_BLOCK_SIZE // fs.ADDRESS_SIZE - 3) * fs.ADDRESS_SIZE,
+                          fs.ADDRESS_SIZE)] if bn != 0]
     return first_blocks[-1]
 
 

@@ -16,7 +16,7 @@ class DataBlockBuffer:
         self.block_number = None
 
     def check_buffer_size(self, offset, buffer_size):
-        if offset + buffer_size >= self.block_size:
+        if offset + buffer_size > self.block_size:
             raise BufferSizeError("Buffer (offset = %d, size = %d) couldn't placed in block (size = %d)" %
                                   offset, buffer_size, self.block_size)
 

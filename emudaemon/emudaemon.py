@@ -17,6 +17,8 @@ from emudaemon.syscall import deletefile
 from emudaemon.syscall import deletedir
 from emudaemon.syscall import closefile
 from emudaemon.syscall import append
+from emudaemon.syscall import readfile
+from emudaemon.syscall import writefile
 from emudaemon import user
 
 SYSCALLS = {FileSysCall.OPEN: openfile.open_file,
@@ -27,7 +29,9 @@ SYSCALLS = {FileSysCall.OPEN: openfile.open_file,
             DirSysCall.DELETE: deletedir.delete_dir,
             FileSysCall.APPEND: append.append,
             UserSysCall.AUTH: user.auth,
-            UserSysCall.EXIT: user.unauth}
+            UserSysCall.EXIT: user.unauth,
+            FileSysCall.READ: readfile.read,
+            FileSysCall.WRITE: writefile.write}
 
 
 class EmulatorDaemon(daemon.Daemon):
@@ -38,6 +42,8 @@ class EmulatorDaemon(daemon.Daemon):
         self.keyfile = keyfile
         self.mq = None
         self.trace_file = None
+        self.snd_sem = None
+        self.rcv_sem = None
 
     def load_bg_table(self):
         gdtable.init_gdtable(fs.get_groups_count(
@@ -54,13 +60,17 @@ class EmulatorDaemon(daemon.Daemon):
         with open(self.keyfile, 'w+') as f:
             f.write('%d\n' % key)
 
+        self.snd_sem = sysv_ipc.Semaphore(key, sysv_ipc.IPC_CREAT)
+        self.rcv_sem = sysv_ipc.Semaphore(key + 1, sysv_ipc.IPC_CREAT)
         self.mq = sysv_ipc.MessageQueue(key, sysv_ipc.IPC_CREAT)
 
         while True:
+            self.snd_sem.acquire()
             msg_buf, msg_type = self.mq.receive()
             self.handle_message(msg_buf, msg_type)
 
     def handle_message(self, msg_buf, msg_type):
+        print(msg_buf)
         params = msg_buf.decode(encoding='ASCII').split()
         try:
             if msg_type < len(FileSysCall) + 1:
@@ -84,9 +94,15 @@ class EmulatorDaemon(daemon.Daemon):
         except deletefile.WrongFileTypeError:
             self.mq.send(ErrorMessage.WRONG_FILE_TYPE.value.encode(encoding='ASCII'),
                          type=MessageType.ERROR_MESSAGE.value)
+        except readfile.OffsetError:
+            self.mq.send(ErrorMessage.WRONG_OFFSET.value.encode(encoding='ASCII'),
+                         type=MessageType.ERROR_MESSAGE.value)
+        self.rcv_sem.release()
 
     def finalize(self):
         self.mq.remove()
+        self.snd_sem.remove()
+        self.rcv_sem.remove()
         os.remove(self.keyfile)
         self.trace_file.close()
         superblock.superblock.unload(0)
