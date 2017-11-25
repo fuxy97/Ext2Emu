@@ -17,7 +17,8 @@ def mkdir(path, mode):
 
 
 def open(path, oflag=0, mode=0):
-    if oflag != openfile.O_CREAT | openfile.O_EXCL and oflag != 0:
+    if oflag != openfile.O_CREAT | openfile.O_EXCL and oflag != openfile.O_RDONLY and \
+       oflag != openfile.O_RDWR and oflag != openfile.O_WRONLY:
         raise UnsupportedOFlagError('oflag value: ' + str(oflag))
 
     return syscall(path + ' ' + str(oflag) + ' ' + str(mode), syscalls.FileSysCall.OPEN.value, int)
@@ -48,6 +49,3 @@ def write(fd, buf, nbytes):
     return syscall((str(fd) + ' ' + base64.b64encode(buf).decode(encoding='ASCII') + ' ' + str(nbytes)),
                    syscalls.FileSysCall.WRITE.value, int)
 
-
-if __name__ == '__main__':
-    print(read(0, 13))

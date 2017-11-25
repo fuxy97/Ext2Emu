@@ -15,10 +15,15 @@ def restart_daemon(emud):
     emud.restart()
 
 
+def init_daemon(emud):
+    emud.init_daemon()
+
+
 commands = {
     'start': start_daemon,
     'stop': stop_daemon,
-    'restart': restart_daemon
+    'restart': restart_daemon,
+    'init': init_daemon
 }
 
 

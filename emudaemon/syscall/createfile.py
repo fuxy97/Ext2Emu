@@ -7,6 +7,8 @@ import time
 from fs import sysblock
 from emudaemon import fdtable
 from fs.dir import filerecord
+from emudaemon import user
+from emudaemon import permissions
 
 
 class DirNotFoundError(ValueError):
@@ -32,6 +34,10 @@ def create_file_record(path, mode):
     dir_inodetable_block = inodetable.load_inode(dir_table_in)
     dir_in = None
 
+    perm = inodetable.S_IRUSR | inodetable.S_IRGRP | inodetable.S_IROTH
+    if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
+        raise PermissionError(perm)
+
     if len(names) > 1:
         for n in names[:-1]:
             offset = filerecord.find_file_record(dir_inodetable_block, dir_table_in, n)
@@ -45,11 +51,18 @@ def create_file_record(path, mode):
             dir_table_in = inodetable.get_table_number(dir_in)
             dir_inodetable_block = inodetable.load_inode(dir_in)
 
+            if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
+                raise PermissionError(perm)
+
             if fs.bytes_to_int(dir_inodetable_block.get_field(
                     dir_table_in,
                     dir_inodetable_block.i_mode
             )) & inodetable.S_IFDIR != inodetable.S_IFDIR:
                 raise DirNotFoundError(n)
+
+    perm = inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWGRP
+    if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
+        raise PermissionError(perm)
 
     offset = filerecord.find_file_record(dir_inodetable_block, dir_table_in, names[-1])
     if offset is None:
@@ -79,4 +92,7 @@ def create_file_record(path, mode):
 
 
 def create_file(path, mode):
+    if not user.is_user_authenticated():
+        raise user.NoAuthUserError()
+
     return create_file_record(path, int(mode) | inodetable.S_IFREG)

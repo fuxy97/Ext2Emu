@@ -9,6 +9,14 @@ from emudaemon import fdtable
 from fs.dir import filerecord
 from emudaemon.syscall import deletefile
 from emudaemon.syscall import createfile
+from emudaemon import permissions
+from emudaemon import user
+
+O_CREAT = 0x0200
+O_EXCL = 0x0800
+O_RDONLY = 0x0
+O_WRONLY = 0x1
+O_RDWR = 0x2
 
 
 class DirNotFoundError(ValueError):
@@ -19,16 +27,17 @@ class FileAlreadyExistsError(ValueError):
     pass
 
 
-O_CREAT = 0x0001
-O_EXCL = 0x0002
-
-
-def create_file_descriptor(path, mode):
+def create_file_descriptor(path, oflag, mode):
     names = [n for n in path.split('/') if n != '']
 
     dir_table_in = 0
     dir_inodetable_block = inodetable.load_inode(dir_table_in)
     dir_in = 0
+
+    perm = inodetable.S_IRUSR | inodetable.S_IRGRP | inodetable.S_IROTH
+
+    if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
+        raise PermissionError(perm)
 
     if len(names) > 1:
         for n in names[:-1]:
@@ -43,6 +52,9 @@ def create_file_descriptor(path, mode):
             dir_table_in = inodetable.get_table_number(dir_in)
             dir_inodetable_block = inodetable.load_inode(dir_in)
 
+            if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
+                raise PermissionError(perm)
+
             if fs.bytes_to_int(dir_inodetable_block.get_field(
                     dir_table_in,
                     dir_inodetable_block.i_mode
@@ -50,6 +62,11 @@ def create_file_descriptor(path, mode):
                 raise createfile.DirNotFoundError(n)
 
     offset = filerecord.find_file_record(dir_inodetable_block, dir_table_in, names[-1])
+
+    if oflag == O_WRONLY:
+        perm = inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWOTH
+    if oflag == O_RDWR:
+        perm |= inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWOTH
 
     if offset is None:
         raise deletefile.FileNotExistsError(names[-1])
@@ -64,13 +81,18 @@ def create_file_descriptor(path, mode):
     )) & mode != mode:
         raise deletefile.WrongFileTypeError(names[-1])
 
+    if not permissions.check_file_permissions(file_inodetable_block, inode_n, perm):
+        raise permissions.PermissionsError(perm)
+
     inodetable.unload_inode(dir_in)
     inodetable.unload_inode(0)
     return fdtable.reserve_fd(inode_n)[0]
 
 
 def open_file(path, oflag, mode='0'):
-    if int(oflag) == 0:
-        return create_file_descriptor(path, inodetable.S_IFREG)
-    elif int(oflag) == O_CREAT | O_EXCL:
+    if not user.is_user_authenticated():
+        raise user.NoAuthUserError()
+    if int(oflag) & (O_CREAT | O_EXCL) == 0:
+        return create_file_descriptor(path, oflag, inodetable.S_IFREG)
+    else:
         return createfile.create_file(path, mode)

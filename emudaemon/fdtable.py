@@ -7,6 +7,12 @@ def build_fd_table():
 
     fd = 0
 
+    def release_fd_table():
+        nonlocal fd
+        fd = 0
+        del fd_table[:]
+        del released_fd[:]
+
     def reserve_fd(inode_number):
         nonlocal fd
         if not released_fd:
@@ -31,7 +37,7 @@ def build_fd_table():
     def get_inode(fd):
         return fd_table[fd][2]
 
-    return reserve_fd, release_fd, get_inode, get_offset, set_offset
+    return reserve_fd, release_fd, get_inode, get_offset, set_offset, release_fd_table
 
 
-reserve_fd, release_fd, get_inode, get_offset, set_offset = build_fd_table()
+reserve_fd, release_fd, get_inode, get_offset, set_offset, release_fd_table = build_fd_table()

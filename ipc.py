@@ -26,7 +26,9 @@ RETURN_ERROR = {
     ErrorMessage.FILE_ALREADY_EXISTS: -1,
     ErrorMessage.FILE_NOT_EXISTS: -1,
     ErrorMessage.WRONG_FILE_TYPE: -1,
-    ErrorMessage.WRONG_OFFSET: -1
+    ErrorMessage.WRONG_OFFSET: -1,
+    ErrorMessage.NO_USER_IN_SYSTEM: -1,
+    ErrorMessage.USER_ALREADY_IN_SYSTEM: -1
 }
 
 

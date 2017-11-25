@@ -87,7 +87,7 @@ partmanparser.add_argument('-S', '--partition-size', type=int, dest='partition_s
                            action=PartmanPartitionSizeAction)
 
 ext2emudparser.add_argument('-p', '--partition-name', dest='partition_name', action=PartmanPartitionNameAction)
-ext2emudparser.add_argument('action', choices=['start', 'stop', 'restart'])
+ext2emudparser.add_argument('action', choices=['start', 'stop', 'restart', 'init'])
 
 
 def parse_args():

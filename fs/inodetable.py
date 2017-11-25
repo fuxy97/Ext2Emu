@@ -11,9 +11,13 @@ inodetable_blocks_list = []
 
 S_IROTH = 0x4
 S_IRGRP = 0x20
-S_IXUSR = 0x40
-S_IWUSR = 0x80
 S_IRUSR = 0x100
+S_IWUSR = 0x80
+S_IWGRP = 0x10
+S_IWOTH = 0x2
+S_IXUSR = 0x40
+S_IXGRP = 0x8
+S_IXOTH = 0x1
 S_IFDIR = 0x4000
 S_IFREG = 0x8000
 
@@ -59,6 +63,25 @@ def unload_inode(number):
             else:
                 block.loads_count -= 1
             break
+
+
+def check_file_permissions(inode_block, inode_n, perm):
+    inode_tn = get_table_number(inode_n)
+    i_mode = fs.bytes_to_int(inode_block.get_field(inode_tn, inode_block.i_mode))
+    return i_mode & perm == perm
+
+
+def check_uid(inode_block, inode_n, uid):
+    inode_tn = get_table_number(inode_n)
+    i_uid = fs.bytes_to_int(inode_block.get_field(inode_tn, inode_block.i_uid))
+    return i_uid == uid
+
+
+def check_gid(inode_block, inode_n, gid):
+    inode_tn = get_table_number(inode_n)
+    i_gid = fs.bytes_to_int(inode_block.get_field(inode_tn, inode_block.i_gid))
+    return i_gid == gid
+
 
 
 I_BLOCK_SIZE = 60

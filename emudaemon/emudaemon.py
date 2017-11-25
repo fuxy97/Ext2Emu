@@ -20,6 +20,7 @@ from emudaemon.syscall import append
 from emudaemon.syscall import readfile
 from emudaemon.syscall import writefile
 from emudaemon import user
+from getpass import getpass
 
 SYSCALLS = {FileSysCall.OPEN: openfile.open_file,
             FileSysCall.CLOSE: closefile.close_file,
@@ -52,6 +53,25 @@ class EmulatorDaemon(daemon.Daemon):
         ))
         gdtable.load_gdtable(0)
 
+    def init_daemon(self):
+        superblock.load_superblock(self.partition_name)
+        self.load_bg_table()
+        try:
+            print('[ext2emud] password for root:')
+            rpass = getpass('Enter new root password: ')
+            rpass_re = getpass('Retype new root password: ')
+            while rpass != rpass_re:
+                print('You typed password incorrectly. Type again:')
+                rpass = getpass('Enter new root password: ')
+                rpass_re = getpass('Retype new root password: ')
+
+            user.create_passwd(rpass)
+        except createfile.FileAlreadyExistsError:
+            print("'/etc/passwd' already exists.")
+        finally:
+            superblock.superblock.unload(0)
+            gdtable.unload_gdtable(0)
+
     def run(self):
         superblock.load_superblock(self.partition_name)
         self.load_bg_table()
@@ -70,7 +90,6 @@ class EmulatorDaemon(daemon.Daemon):
             self.handle_message(msg_buf, msg_type)
 
     def handle_message(self, msg_buf, msg_type):
-        print(msg_buf)
         params = msg_buf.decode(encoding='ASCII').split()
         try:
             if msg_type < len(FileSysCall) + 1:
@@ -96,6 +115,12 @@ class EmulatorDaemon(daemon.Daemon):
                          type=MessageType.ERROR_MESSAGE.value)
         except readfile.OffsetError:
             self.mq.send(ErrorMessage.WRONG_OFFSET.value.encode(encoding='ASCII'),
+                         type=MessageType.ERROR_MESSAGE.value)
+        except user.NoAuthUserError:
+            self.mq.send(ErrorMessage.NO_USER_IN_SYSTEM.value.encode(encoding='ASCII'),
+                         type=MessageType.ERROR_MESSAGE.value)
+        except user.AuthError:
+            self.mq.send(ErrorMessage.USER_ALREADY_IN_SYSTEM.value.encode(encoding='ASCII'),
                          type=MessageType.ERROR_MESSAGE.value)
         self.rcv_sem.release()
 

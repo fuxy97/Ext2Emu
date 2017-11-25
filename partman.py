@@ -72,4 +72,3 @@ commands = {
 
 def exec_partman(args):
     commands[args.action](args.partition_name, args.partition_size)
-
