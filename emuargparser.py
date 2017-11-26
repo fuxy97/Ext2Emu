@@ -75,6 +75,23 @@ ext2emudparser = subparsers.add_parser('ext2emud', prog='Ext2 Emulator daemon', 
                                                                                             'standalone daemon '
                                                                                             'process.')
 
+subparsers.add_parser('login', prog='Ext2 Emulator login utility', description='Utility for user authorization in '
+                                                                               'emulator.')
+subparsers.add_parser('exit', prog='Ext2 Emulator exit utility', description='Utility for user quiting from emulator.')
+
+lsparser = subparsers.add_parser('ls', prog='Ext2 Emulator ls utility',
+                                 description='List directory contents, information about files.')
+
+pipeparser = subparsers.add_parser('>', prog='Ext2 Emulator pipe utility',
+                                   description='Redirect stdin to file and redirect file to stdout.')
+
+rmparser = subparsers.add_parser('rm', prog='Ext2 Emulator rm utility',
+                                 description="Remove files. This utility doesn't remove directories. "
+                                             "Please use rmdir for this purpose.")
+
+cpparser = subparsers.add_parser('cp', prog='Ext2 Emulator cp utility',
+                                 description="Copy files. This utility doesn't copy directories.")
+
 mkfsparser.add_argument('partition_name', action=MkfsPartitionNameAction)
 mkfsparser.add_argument('-B', '--block-size', type=int, default=4096, choices=[1024, 2048, 4096], dest='block_size')
 mkfsparser.add_argument('-G', '--blocks-per-group', type=int, dest='blocks_per_group', action=BlocksPerGroupAction)
@@ -86,8 +103,19 @@ partmanparser.add_argument('partition_name', nargs='?', action=PartmanPartitionN
 partmanparser.add_argument('-S', '--partition-size', type=int, dest='partition_size',
                            action=PartmanPartitionSizeAction)
 
+lsparser.add_argument('-l', dest='list', action='store_true')
+lsparser.add_argument('-a', dest='all', action='store_true')
+lsparser.add_argument('path', type=str)
+
 ext2emudparser.add_argument('-p', '--partition-name', dest='partition_name', action=PartmanPartitionNameAction)
 ext2emudparser.add_argument('action', choices=['start', 'stop', 'restart', 'init'])
+
+pipeparser.add_argument('path', type=str)
+
+rmparser.add_argument('path', type=str)
+
+cpparser.add_argument('source', type=str)
+cpparser.add_argument('dest', type=str)
 
 
 def parse_args():

@@ -39,41 +39,51 @@ def create_file_descriptor(path, oflag, mode):
     if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
         raise PermissionError(perm)
 
-    if len(names) > 1:
-        for n in names[:-1]:
-            offset = filerecord.find_file_record(dir_inodetable_block, dir_table_in, n)
+    if path != '/':
+        if len(names) > 1:
+            for n in names[:-1]:
+                offset = filerecord.find_file_record(dir_inodetable_block, dir_table_in, n)
 
-            inodetable.unload_inode(dir_in)
+                inodetable.unload_inode(dir_in)
 
-            if offset is None:
-                raise createfile.DirNotFoundError(n)
+                if offset is None:
+                    raise createfile.DirNotFoundError(n)
 
-            dir_in = filerecord.get_record_inode_number(offset)
-            dir_table_in = inodetable.get_table_number(dir_in)
-            dir_inodetable_block = inodetable.load_inode(dir_in)
+                dir_in = filerecord.get_record_inode_number(offset)
+                dir_table_in = inodetable.get_table_number(dir_in)
+                dir_inodetable_block = inodetable.load_inode(dir_in)
 
-            if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
-                raise PermissionError(perm)
+                if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
+                    raise PermissionError(perm)
 
-            if fs.bytes_to_int(dir_inodetable_block.get_field(
-                    dir_table_in,
-                    dir_inodetable_block.i_mode
-            )) & inodetable.S_IFDIR != inodetable.S_IFDIR:
-                raise createfile.DirNotFoundError(n)
+                if fs.bytes_to_int(dir_inodetable_block.get_field(
+                        dir_table_in,
+                        dir_inodetable_block.i_mode
+                )) & inodetable.S_IFDIR != inodetable.S_IFDIR:
+                    raise createfile.DirNotFoundError(n)
 
-    offset = filerecord.find_file_record(dir_inodetable_block, dir_table_in, names[-1])
+        offset = filerecord.find_file_record(dir_inodetable_block, dir_table_in, names[-1])
 
-    if oflag == O_WRONLY:
-        perm = inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWOTH
-    if oflag == O_RDWR:
-        perm |= inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWOTH
+        if oflag == O_WRONLY:
+            perm = inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWOTH
+        if oflag == O_RDWR:
+            perm |= inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWOTH
 
-    if offset is None:
-        raise deletefile.FileNotExistsError(names[-1])
+        if offset is None:
+            raise deletefile.FileNotExistsError(names[-1])
 
-    inode_n = filerecord.get_record_inode_number(offset)
-    inode_table_n = inodetable.get_table_number(inode_n)
-    file_inodetable_block = inodetable.load_inode(inode_n)
+        inode_n = filerecord.get_record_inode_number(offset)
+        inode_table_n = inodetable.get_table_number(inode_n)
+        file_inodetable_block = inodetable.load_inode(inode_n)
+    else:
+        if oflag == O_WRONLY:
+            perm = inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWOTH
+        if oflag == O_RDWR:
+            perm |= inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWOTH
+
+        inode_n = dir_in
+        inode_table_n = dir_table_in
+        file_inodetable_block = dir_inodetable_block
 
     if fs.bytes_to_int(file_inodetable_block.get_field(
             inode_table_n,

@@ -41,4 +41,4 @@ def syscall(mq_msg, mq_msg_type, return_type):
     if msg_type == MessageType.ERROR_MESSAGE.value:
         return RETURN_ERROR[ErrorMessage(msg_buf.decode(encoding='ASCII'))]
 
-    return return_type(msg_buf)
+    return return_type(msg_buf.decode(encoding='ASCII'))

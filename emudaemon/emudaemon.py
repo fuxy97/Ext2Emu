@@ -19,6 +19,11 @@ from emudaemon.syscall import closefile
 from emudaemon.syscall import append
 from emudaemon.syscall import readfile
 from emudaemon.syscall import writefile
+from emudaemon.syscall import opendir
+from emudaemon.syscall import closedir
+from emudaemon.syscall import readdir
+from emudaemon.syscall import getattributes
+from emudaemon.syscall import seekfile
 from emudaemon import user
 from getpass import getpass
 
@@ -32,7 +37,12 @@ SYSCALLS = {FileSysCall.OPEN: openfile.open_file,
             UserSysCall.AUTH: user.auth,
             UserSysCall.EXIT: user.unauth,
             FileSysCall.READ: readfile.read,
-            FileSysCall.WRITE: writefile.write}
+            FileSysCall.WRITE: writefile.write,
+            DirSysCall.OPEN: opendir.opendir,
+            DirSysCall.CLOSE: closedir.closedir,
+            DirSysCall.READ: readdir.readdir,
+            FileSysCall.GET_ATTRIBUTES: getattributes.stat,
+            FileSysCall.SEEK: seekfile.seek}
 
 
 class EmulatorDaemon(daemon.Daemon):
@@ -132,4 +142,3 @@ class EmulatorDaemon(daemon.Daemon):
         self.trace_file.close()
         superblock.superblock.unload(0)
         gdtable.unload_gdtable(0)
-

@@ -20,6 +20,9 @@ class FileAlreadyExistsError(ValueError):
 
 
 def create_file_record(path, mode):
+    if path == '/':
+        raise FileAlreadyExistsError('/')
+
     names = [n for n in path.split('/') if n != '']
     bg_block = gdtable.get_gdtableblock(0)
     inodebitmap.inode_bitmap.load(fs.bytes_to_int(bg_block.get_field(0, bg_block.bg_inode_bitmap)))

@@ -36,7 +36,12 @@ def build_user():
                 fd = createfile.create_file('/etc/passwd', inodetable.S_IRUSR | inodetable.S_IWUSR |
                                             inodetable.S_IRGRP | inodetable.S_IROTH)
                 writefile.write_by_offset(fd, ('root:' + hashlib.sha224(root_pass.encode()).hexdigest()
-                                          + ':0:0:').encode(encoding='ASCII'), 66)
+                                          + ':0:0:\n').encode(encoding='ASCII'), 67)
+                closefile.close_file(fd)
+
+                fd = createfile.create_file('/etc/group', inodetable.S_IRUSR | inodetable.S_IWUSR |
+                                            inodetable.S_IRGRP | inodetable.S_IROTH)
+                writefile.write_by_offset(fd, 'root:0:\n'.encode(encoding='ASCII'), 8)
                 closefile.close_file(fd)
             finally:
                 uid, gid = -1, -1
@@ -48,15 +53,18 @@ def build_user():
 
         uid, gid = 0, 0
         fd = openfile.open_file('/etc/passwd', openfile.O_RDONLY)
-        uid, gid = -1, -1
 
         inode = fdtable.get_inode(fd)
         inode_tn = inodetable.get_table_number(inode)
         file_inodetable_block = inodetable.load_inode(inode)
         file_size = fs.bytes_to_int(file_inodetable_block.get_field(inode_tn, file_inodetable_block.i_size))
 
+        lines = readfile.read_by_offset(fd, file_size).decode(encoding='ASCII').splitlines()
+        closefile.close_file(fd)
+        uid, gid = -1, -1
+
         digest = hashlib.sha224(passwd.encode()).hexdigest()
-        for l in readfile.read_by_offset(fd, file_size).decode(encoding='ASCII').splitlines():
+        for l in lines:
             if l.lstrip()[0] != '#':
                 u = tuple(l.split(':'))
                 if u[0] == user:
