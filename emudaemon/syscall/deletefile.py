@@ -8,6 +8,11 @@ from emudaemon.syscall import createfile
 from fs.datablockbuffer import data_block_buffer
 from emudaemon import user
 from emudaemon import permissions
+from emudaemon.syscall import opendir
+from emudaemon.syscall import closedir
+from emudaemon.syscall import readdir
+from emudaemon.syscall import readfile
+import time
 
 
 class FileNotExistsError(ValueError):
@@ -18,7 +23,14 @@ class WrongFileTypeError(ValueError):
     pass
 
 
+class DirIsNotEmpty(ValueError):
+    pass
+
+
 def delete_file_record(path, mode):
+    if path == '/':
+        raise WrongFileTypeError(path)
+
     names = [n for n in path.split('/') if n != '']
     bg_block = gdtable.get_gdtableblock(0)
     inodebitmap.inode_bitmap.load(fs.bytes_to_int(bg_block.get_field(0, bg_block.bg_inode_bitmap)))
@@ -29,7 +41,7 @@ def delete_file_record(path, mode):
 
     perm = inodetable.S_IRUSR | inodetable.S_IRGRP | inodetable.S_IROTH
     if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
-        raise PermissionError(perm)
+        raise permissions.PermissionsError(perm)
 
     if len(names) > 1:
         for n in names[:-1]:
@@ -45,7 +57,7 @@ def delete_file_record(path, mode):
             dir_inodetable_block = inodetable.load_inode(dir_in)
 
             if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
-                raise PermissionError(perm)
+                raise permissions.PermissionsError(perm)
 
             if fs.bytes_to_int(dir_inodetable_block.get_field(
                     dir_table_in,
@@ -53,11 +65,12 @@ def delete_file_record(path, mode):
             )) & inodetable.S_IFDIR != inodetable.S_IFDIR:
                 raise createfile.DirNotFoundError(n)
 
-    perm = inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWGRP
+    perm = inodetable.S_IWUSR | inodetable.S_IWGRP | inodetable.S_IWOTH
     if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
-        raise PermissionError(perm)
+        raise permissions.PermissionsError(perm)
 
     offset = filerecord.find_file_record(dir_inodetable_block, dir_table_in, names[-1])
+    bn = data_block_buffer.block_number
 
     if offset is None:
         raise FileNotExistsError(names[-1])
@@ -72,7 +85,19 @@ def delete_file_record(path, mode):
     )) & mode != mode:
         raise WrongFileTypeError(names[-1])
 
+    if mode & inodetable.S_IFDIR == inodetable.S_IFDIR:
+        fd = opendir.opendir(path)
+        try:
+            readdir.readdir(fd)
+            raise DirIsNotEmpty(path)
+        except readfile.OffsetError:
+            pass
+        finally:
+            closedir.closedir(fd)
+
+    data_block_buffer.load(bn)
     filerecord.remove_file_record(offset)
+    dir_inodetable_block.set_field(dir_table_in, dir_inodetable_block.i_mtime, int(time.time()))
     inodebitmap.set_free_inode(inode_table_n)
     inodebitmap.inode_bitmap.unload(fs.bytes_to_int(bg_block.get_field(0, bg_block.bg_inode_bitmap)))
     inodetable.unload_inode(inode_n)

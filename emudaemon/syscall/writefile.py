@@ -4,6 +4,7 @@ from fs import inodetable
 from emudaemon import fdtable
 from fs.datablockbuffer import data_block_buffer
 import base64
+import time
 
 
 def write_by_offset(fd, buf, nbytes):
@@ -48,6 +49,9 @@ def write_by_offset(fd, buf, nbytes):
     data_block_buffer.unload(bn)
 
     fdtable.set_offset(fd, offset + nbytes)
+
+    file_inodetable_block.set_field(inode_tn, file_inodetable_block.i_mtime, int(time.time()))
+
     inodetable.unload_inode(inode)
 
 

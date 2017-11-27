@@ -37,7 +37,7 @@ def create_file_descriptor(path, oflag, mode):
     perm = inodetable.S_IRUSR | inodetable.S_IRGRP | inodetable.S_IROTH
 
     if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
-        raise PermissionError(perm)
+        raise permissions.PermissionsError(perm)
 
     if path != '/':
         if len(names) > 1:
@@ -54,7 +54,7 @@ def create_file_descriptor(path, oflag, mode):
                 dir_inodetable_block = inodetable.load_inode(dir_in)
 
                 if not permissions.check_file_permissions(dir_inodetable_block, dir_in, perm):
-                    raise PermissionError(perm)
+                    raise permissions.PermissionsError(perm)
 
                 if fs.bytes_to_int(dir_inodetable_block.get_field(
                         dir_table_in,
@@ -96,13 +96,13 @@ def create_file_descriptor(path, oflag, mode):
 
     inodetable.unload_inode(dir_in)
     inodetable.unload_inode(0)
-    return fdtable.reserve_fd(inode_n)[0]
+    return fdtable.reserve_fd(inode_n)
 
 
 def open_file(path, oflag, mode='0'):
     if not user.is_user_authenticated():
         raise user.NoAuthUserError()
     if int(oflag) & (O_CREAT | O_EXCL) == 0:
-        return create_file_descriptor(path, oflag, inodetable.S_IFREG)
+        return create_file_descriptor(path, int(oflag), inodetable.S_IFREG)
     else:
         return createfile.create_file(path, mode)

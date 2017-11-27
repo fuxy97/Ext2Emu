@@ -28,7 +28,9 @@ RETURN_ERROR = {
     ErrorMessage.WRONG_FILE_TYPE: -1,
     ErrorMessage.WRONG_OFFSET: -1,
     ErrorMessage.NO_USER_IN_SYSTEM: -1,
-    ErrorMessage.USER_ALREADY_IN_SYSTEM: -1
+    ErrorMessage.USER_ALREADY_IN_SYSTEM: -1,
+    ErrorMessage.NO_PERMISSIONS: -1,
+    ErrorMessage.DIR_IS_NOT_EMPTY: -1
 }
 
 

@@ -24,6 +24,7 @@ from emudaemon.syscall import closedir
 from emudaemon.syscall import readdir
 from emudaemon.syscall import getattributes
 from emudaemon.syscall import seekfile
+from emudaemon import permissions
 from emudaemon import user
 from getpass import getpass
 
@@ -131,6 +132,12 @@ class EmulatorDaemon(daemon.Daemon):
                          type=MessageType.ERROR_MESSAGE.value)
         except user.AuthError:
             self.mq.send(ErrorMessage.USER_ALREADY_IN_SYSTEM.value.encode(encoding='ASCII'),
+                         type=MessageType.ERROR_MESSAGE.value)
+        except permissions.PermissionsError:
+            self.mq.send(ErrorMessage.NO_PERMISSIONS.value.encode(encoding='ASCII'),
+                         type=MessageType.ERROR_MESSAGE.value)
+        except deletefile.DirIsNotEmpty:
+            self.mq.send(ErrorMessage.DIR_IS_NOT_EMPTY.value.encode(encoding='ASCII'),
                          type=MessageType.ERROR_MESSAGE.value)
         self.rcv_sem.release()
 

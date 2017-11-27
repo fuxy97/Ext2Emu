@@ -4,6 +4,7 @@ from fs import inodetable
 from emudaemon import fdtable
 from fs.datablockbuffer import data_block_buffer
 import base64
+import time
 
 
 class OffsetError(IndexError):
@@ -43,6 +44,9 @@ def read_by_offset(fd, nbytes):
         buf[:] = data_block_buffer.get_bytes(b_offset, nbytes)
 
     fdtable.set_offset(fd, offset + nbytes)
+
+    file_inodetable_block.set_field(inode_tn, file_inodetable_block.i_atime, int(time.time()))
+
     inodetable.unload_inode(inode)
     return bytes(buf)
 

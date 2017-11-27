@@ -9,6 +9,10 @@ from getpass import getpass
 import user
 import rm
 import cp
+import rmdir
+import mkdir
+import useradd
+import userblock
 
 
 def user_login(args):
@@ -32,10 +36,17 @@ utilities = {
     'ls': ls.exec_ls,
     '>': pipe.exec_pipe,
     'rm': rm.exec_rm,
-    'cp': cp.exec_cp
+    'cp': cp.exec_cp,
+    'rmdir': rmdir.rmdir_exec,
+    'mkdir': mkdir.mkdir_exec,
+    'useradd': useradd.useradd_exec,
+    'userblock': userblock.userblock_exec
 }
 
 if __name__ == '__main__':
     from emuargparser import parse_args
     args = parse_args()
-    utilities[args.utility](args)
+    try:
+        utilities[args.utility](args)
+    except FileNotFoundError:
+        print('Ext2Emulator daemon is not running. Please start daemon to run this command.')

@@ -3,6 +3,7 @@ from fs.superblock import superblock
 from fs import inodetable
 from emudaemon import fdtable
 from fs.datablockbuffer import data_block_buffer
+import time
 
 
 def write_to_end(fd, buf, nbytes):
@@ -42,6 +43,9 @@ def write_to_end(fd, buf, nbytes):
         file_size + nbytes
     )
     data_block_buffer.unload(last_bn)
+
+    file_inodetable_block.set_field(inode_tn, file_inodetable_block.i_mtime, int(time.time()))
+
     inodetable.unload_inode(inode)
 
 

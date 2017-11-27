@@ -124,7 +124,9 @@ def create_inode_table():
     inodetable_block = inodetable.load_inode(0)
     table_number = inodetable.get_table_number(0)
     inodetable_block.set_field(table_number, inodetable_block.i_mode,
-                               inodetable.S_IFDIR | inodetable.S_IXUSR | inodetable.S_IRUSR | inodetable.S_IWUSR)
+                               inodetable.S_IFDIR | inodetable.S_IXUSR | inodetable.S_IRUSR | inodetable.S_IWUSR
+                               | inodetable.S_IXOTH | inodetable.S_IROTH | inodetable.S_IWOTH | inodetable.S_IWGRP
+                               | inodetable.S_IRGRP | inodetable.S_IXGRP)
     inodetable_block.set_field(table_number, inodetable_block.i_uid, 0)
     inodetable_block.set_field(table_number, inodetable_block.i_size, 0)
     inodetable_block.set_field(table_number, inodetable_block.i_atime, 0)
