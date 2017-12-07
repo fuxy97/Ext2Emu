@@ -92,6 +92,7 @@ def create_file_record_in_block(offset, inode_number, filename):
 
 
 def find_first_free_record_in_block(file_size=None, offset=0):
+    rlength = None
     length = file_size % data_block_buffer.block_size if file_size else data_block_buffer.block_size
     while offset < length:
         inode = fs.bytes_to_int(data_block_buffer.get_bytes(offset, IN_FIELD_SIZE))
@@ -102,7 +103,10 @@ def find_first_free_record_in_block(file_size=None, offset=0):
 
         offset += rlength
 
-    return None, offset - rlength
+    if rlength is not None:
+        return None, offset - rlength
+    else:
+        return None, 0
 
 
 def find_file_record(inode_block, inode_table_number, filename):

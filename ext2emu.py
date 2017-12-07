@@ -13,6 +13,7 @@ import rmdir
 import mkdir
 import useradd
 import userblock
+import chmod
 
 
 def user_login(args):
@@ -40,7 +41,8 @@ utilities = {
     'rmdir': rmdir.rmdir_exec,
     'mkdir': mkdir.mkdir_exec,
     'useradd': useradd.useradd_exec,
-    'userblock': userblock.userblock_exec
+    'userblock': userblock.userblock_exec,
+    'chmod': chmod.chmod_exec
 }
 
 if __name__ == '__main__':

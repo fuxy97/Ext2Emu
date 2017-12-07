@@ -17,6 +17,7 @@ O_EXCL = 0x0800
 O_RDONLY = 0x0
 O_WRONLY = 0x1
 O_RDWR = 0x2
+O_STAT = 0x3
 
 
 class DirNotFoundError(ValueError):
@@ -91,8 +92,9 @@ def create_file_descriptor(path, oflag, mode):
     )) & mode != mode:
         raise deletefile.WrongFileTypeError(names[-1])
 
-    if not permissions.check_file_permissions(file_inodetable_block, inode_n, perm):
-        raise permissions.PermissionsError(perm)
+    if oflag != O_STAT:
+        if not permissions.check_file_permissions(file_inodetable_block, inode_n, perm):
+            raise permissions.PermissionsError(perm)
 
     inodetable.unload_inode(dir_in)
     inodetable.unload_inode(0)

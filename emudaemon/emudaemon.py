@@ -23,6 +23,7 @@ from emudaemon.syscall import opendir
 from emudaemon.syscall import closedir
 from emudaemon.syscall import readdir
 from emudaemon.syscall import getattributes
+from emudaemon.syscall import setattributes
 from emudaemon.syscall import seekfile
 from emudaemon import permissions
 from emudaemon import user
@@ -43,7 +44,8 @@ SYSCALLS = {FileSysCall.OPEN: openfile.open_file,
             DirSysCall.CLOSE: closedir.closedir,
             DirSysCall.READ: readdir.readdir,
             FileSysCall.GET_ATTRIBUTES: getattributes.stat,
-            FileSysCall.SEEK: seekfile.seek}
+            FileSysCall.SEEK: seekfile.seek,
+            FileSysCall.SET_ATTRIBUTES: setattributes.chmod}
 
 
 class EmulatorDaemon(daemon.Daemon):
