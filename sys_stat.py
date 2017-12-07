@@ -14,3 +14,7 @@ def is_reg_file(mode):
 
 def stat(path):
     return syscall(path, syscalls.FileSysCall.GET_ATTRIBUTES.value, literal_eval)
+
+
+def chmod(path, mode):
+    return syscall(path + ' ' + str(mode), syscalls.FileSysCall.SET_ATTRIBUTES.value, int)

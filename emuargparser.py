@@ -12,6 +12,17 @@ class MkfsPartitionNameAction(argparse.Action):
         setattr(namespace, self.dest, values)
 
 
+class ChmodModeAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if len(values) > 3:
+            parser.error('Mode value too long. No more than 3 octal digits.')
+        try:
+            setattr(namespace, self.dest, int(values, 8))
+        except ValueError:
+            print("Invalid octal mode's value.")
+            exit(0)
+
+
 class PartmanPartitionNameAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         if values is not None and len(values) > 16:
@@ -104,6 +115,9 @@ useraddparser = subparsers.add_parser('useradd', prog='Ext2 Emulator useradd uti
 userblockparser = subparsers.add_parser('userblock', prog='Ext2 Emulator userblock utility',
                                         description="Block users. User can't login after blocking.")
 
+chmodparser = subparsers.add_parser('chmod', prog='Ext2 Emulator chmod utility.',
+                                    description="Change file's mode. Only owner of file or root can change mode.")
+
 
 mkfsparser.add_argument('partition_name', action=MkfsPartitionNameAction)
 mkfsparser.add_argument('-B', '--block-size', type=int, default=4096, choices=[1024, 2048, 4096], dest='block_size')
@@ -135,6 +149,9 @@ mkdirparser.add_argument('path', type=str)
 rmdirparser.add_argument('path', type=str)
 useraddparser.add_argument('username', type=str)
 userblockparser.add_argument('username', type=str)
+
+chmodparser.add_argument('mode', type=str, action=ChmodModeAction)
+chmodparser.add_argument('path', type=str)
 
 
 def parse_args():

@@ -10,20 +10,21 @@ show_hidden = False
 
 def show_dir_record(name, path, users, groups):
     st = sys_stat.stat(path + '/' + name)
-    print('d' if sys_stat.is_dir(st[1]) else '-', end='')
-    print('r' if st[1] & inodetable.S_IRUSR else '-', end='')
-    print('w' if st[1] & inodetable.S_IWUSR else '-', end='')
-    print('x' if st[1] & inodetable.S_IXUSR else '-', end='')
-    print('r' if st[1] & inodetable.S_IRGRP else '-', end='')
-    print('w' if st[1] & inodetable.S_IWGRP else '-', end='')
-    print('x' if st[1] & inodetable.S_IXGRP else '-', end='')
-    print('r' if st[1] & inodetable.S_IROTH else '-', end='')
-    print('w' if st[1] & inodetable.S_IWOTH else '-', end='')
-    print('x' if st[1] & inodetable.S_IXOTH else '-', end=' ')
+    if st != -1:
+        print('d' if sys_stat.is_dir(st[1]) else '-', end='')
+        print('r' if st[1] & inodetable.S_IRUSR else '-', end='')
+        print('w' if st[1] & inodetable.S_IWUSR else '-', end='')
+        print('x' if st[1] & inodetable.S_IXUSR else '-', end='')
+        print('r' if st[1] & inodetable.S_IRGRP else '-', end='')
+        print('w' if st[1] & inodetable.S_IWGRP else '-', end='')
+        print('x' if st[1] & inodetable.S_IXGRP else '-', end='')
+        print('r' if st[1] & inodetable.S_IROTH else '-', end='')
+        print('w' if st[1] & inodetable.S_IWOTH else '-', end='')
+        print('x' if st[1] & inodetable.S_IXOTH else '-', end=' ')
 
-    print('{0:4} {1:4} {2:4} {3:12} {4}'.format(next(u[0] for u in users if int(u[2]) == st[2]),
-          next(g[0] for g in groups if int(g[1]) == st[3]), st[4],
-          time.strftime('%b %d %H:%M', time.gmtime(st[6])).lower(), name))
+        print('{0:4} {1:4} {2:4} {3:12} {4}'.format(next(u[0] for u in users if int(u[2]) == st[2]),
+              next(g[0] for g in groups if int(g[1]) == st[3]), st[4],
+              time.strftime('%b %d %H:%M', time.gmtime(st[6])).lower(), name))
 
 
 def show_dir_list(path):

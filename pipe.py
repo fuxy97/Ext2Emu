@@ -24,9 +24,12 @@ def exec_pipe(args):
         fcntl.close(fd)
 
     fd = fcntl.open(args.path, openfile.O_RDONLY)
+    if fd == -1:
+        print("Can't open file.")
+        return
+
     filesize = sys_stat.stat(args.path)[4]
     if filesize > 0:
         buf = fcntl.read(fd, filesize)
         print(buf.decode(encoding='utf-8'))
     fcntl.close(fd)
-

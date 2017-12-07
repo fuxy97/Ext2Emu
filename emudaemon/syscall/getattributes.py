@@ -6,7 +6,7 @@ from fs import fs
 
 
 def stat(path):
-    fd = openfile.create_file_descriptor(path, openfile.O_RDONLY, 0)
+    fd = openfile.create_file_descriptor(path, openfile.O_STAT, 0)
     ino = fdtable.get_inode(fd)
     inode_tn = inodetable.get_table_number(ino)
 
